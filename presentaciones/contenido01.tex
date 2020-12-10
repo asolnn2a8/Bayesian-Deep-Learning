@@ -1,5 +1,6 @@
 \section{Motivación}
 \begin{frame}{Motivación}
+    
    \begin{itemize}[<+->]
        \item Los modelos de Deep Learning (DL) son \textbf{determinísticos}: estimaciones puntuales de parámetros y predicciones.
        \item Los modelos actuales de DL tienden a estar \textbf{sobreparametrizados}. Ej: GPT3 ($\sim$175 bill.) Y distintos parámetros pueden ajustarse bien en entrenamiento, pero arrojan resultados distintos en prueba. 
@@ -45,19 +46,25 @@
 \section{Modelamiento bayesiano}
 
 \begin{frame}{Modelamiento bayesiano}
-    Dadas las observaciones $X, Y$, tomar un \textbf{prior} sobre los parámetros $p(\omega)$ y encontrar los parámetros que \textbf{maximicen la posterior}:
-    
+    Dadas las observaciones $\bX, \bY$ se desea encontrar los parámetros $\bomega$ tal que $\by \approx \fb^{\bomega}(\bx)$. Para esto se intenta \textbf{maximizar} la posterior:
     \begin{equation}
-        p(\omega|X,Y) = \dfrac{p(Y|X,\omega)p(\omega)}{p(Y|X)},
+        p(\bomega|\bX,\bY) = \dfrac{p(\bY|\bX,\bomega)p(\bomega)}{p(\bY|\bX)},
     \end{equation}
     
-    siendo $p(Y|X)$ la \textbf{evidencia}, dada por:
-    
+    Utilizando esto se puede realizar una predicción utilizando un nuevo punto $\bx^*$ integrando
     \begin{equation}
-        p(Y|X) = \int p(Y|X,\omega) p(\omega) d\omega.
+        p(\by^* | \bx^*, \bX, \bY) = \int p(\by^* | \bx^*, \bomega) p(\bomega | \bX, \bY) \dif \bomega
     \end{equation}
     
-    Sin embargo, en general esta integral no puede ser calculada analíticamente. Por lo tanto, se requiere una \textbf{aproximación}.
+    Por lo general, la expresión $p(\bomega|\bX,\bY)$ es intratable, con lo que se utilizará inferencia variacional para obtener una aproximación.
+    
+    % siendo $p(\bY|\bX)$ la \textbf{evidencia}, dada por:
+    
+    % \begin{equation}
+    %     p(\bY|\bX) = \int p(\bY|\bX,\bomega) p(\bomega) d\bomega.
+    % \end{equation}
+    
+    % Sin embargo, en general esta integral no puede ser calculada analíticamente. Por lo tanto, se requiere una \textbf{aproximación}.
 \end{frame}
 
 \subsection{Inferencia variacional}
@@ -66,10 +73,9 @@
 
 
     \uncover<1->{
-    Se define una \textbf{distribución variacional aproximada} $q_\theta(\omega)$ cuya estructura sea fácil de evaluar.
-    
+    Se define una \textbf{distribución variacional aproximada} $q_\theta(\bomega)$ parametrizada por $\theta$, cuya estructura sea fácil de evaluar.
     \begin{equation}
-        q^*_\theta(\omega) = \argmin_\theta \ KL\{q_\theta(\omega)||p(\omega|X,Y)\}
+        q^*_\theta(\bomega) = \argmin_\theta \ \KL\{q_\theta(\bomega)||p(\bomega|\bX,\bY)\}
     \end{equation}
    } 
 
@@ -77,7 +83,7 @@
      Esto es equivalente a maximizar la \textbf{cota inferior de la evidencia (ELBO)}:
     \vspace{-5pt}
     \begin{equation}
-        \text{ELBO}(q) = \mathbb{E}_{q_\theta(\omega)}\{\text{log} p(Y|X,\omega)\} - KL\{q_\theta(\omega)|| p(\omega)\} := \mathcal{L}_{VI}(\theta)
+        \ELBO(q) = \esp_{q_\theta(\bomega)}\{\ \log p(\bY|\bX,\bomega)\} - \KL\{q_\theta(\bomega)|| p(\bomega)\} := \L_{\VI}(\theta)
     \end{equation}
    } 
     
@@ -99,20 +105,37 @@
 
 \section{Bayesian Deep Learning}
 
+\begin{frame}{Bayesian Neural Networks (BNN)}
+    En una Red Neuronal Bayesiana se modelan los pesos por medio de una distribución. 
+    % Es decir, dadas las matrices de pesos $\bW_i$ y vectores de bias $\bb_i$ para la capa $i$, se asume un prior sobre las matrices de pesos, $p(\bW_i) = \N(\bm{0}, \bm{I})$
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\linewidth]{presentaciones/img/comp_NN_con_BNN.jpg}
+        \caption{Comparación de una red neuronal con una red neuronal bayesiana. Obtenido de \cite{blundell2015weight}.}
+        \label{fig:comp_NN_con_BNN}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Inferencia Variacional en una BNN}
+    Recordar que se está buscando la distribución posterior de los pesos dados los datos: $p(\bomega | \bX, \bY)$. Cómo esta expresión es intratable, se aproxima a través de inferencia variacional. Consideramos a la distribución variacional aproximada $q_\theta(\bomega)$ como
+    \begin{equation}
+        q_\theta(\bomega) = \prod_{i=1}^{L} q_\theta (\bW_i) = \prod_{i, j, k} \N(w_{ijk}; m_{ijk}, \sigma^2_{ojk})
+    \end{equation}
+    
+    Dónde el parámetro $\bomega = \{\bW_i, \bb_i\}_{i=1}^{L}$ corresponde a los pesos y bias de la red
+\end{frame}
 
 \begin{frame}{Bayesian Neural Networks (BNN)}
     
     Se considera un prior sobre los pesos de la NN, induciendo una distribución sobre un conjunto paramétrico de funciones.
-    
-    
     \begin{align}
         \begin{split}
-            \mathcal{L}_{VI}(\theta) &= \mathbb{E}_{q_\theta(\omega)}\{\text{log} p(Y|X,\omega)\} - KL\{q_\theta(\omega)|| p(\omega)\} \\
-            &= \sum_{i=1}^N \mathbb{E}_{q_\theta(\omega)}\{\text{log} p(y_i|f^\omega(x_i))\} - KL\{q_\theta(\omega)|| p(\omega)\},
+            \L_{\VI}(\theta) &= \esp_{q_\theta(\bomega)}\{\log p(\bY|\bX,\bomega)\} - \KL\{q_\theta(\bomega)|| p(\bomega)\} \\
+            &= \sum_{i=1}^N \esp_{q_\theta(\bomega)}\{\log p(\by_i|\fb^\bomega(\bx_i))\} - \KL\{q_\theta(\bomega)|| p(\bomega)\},
         \end{split}
     \end{align}
 
-    siendo $f^\omega(x_i)$ el output del modelo para $x_i$.
+    siendo $\fb^\bomega(\bx_i)$ el output del modelo para $\bx_i$.
     
     
     \begin{exampleblock}{Ventajas}
@@ -129,7 +152,7 @@
 
 
     \uncover<1->{
-        \color{red} \textbf{¡PERO!} \color{black} Esta expresión de $\mathcal{L}_{VI}(\theta)$:
+        \color{red} \textbf{¡PERO!} \color{black} Esta expresión de $\L_{\VI}(\theta)$:
 
         \begin{enumerate}
             \item requiere calcular sobre todo el dataset $\Rightarrow$ costoso, e
@@ -146,7 +169,7 @@
         \begin{enumerate}[<+->]
             \item Usar minibatches.
             \begin{equation}
-                \hat{\mathcal{L}}_{VI}(\theta) = \dfrac{N}{M}\sum_{i\in \mathcal{S}} \mathbb{E}_{q_\theta(\omega)}\{\text{log} p(y_i|f^\omega(x_i))\} - KL\{q_\theta(\omega)|| p(\omega)\}
+                \hat{\L}_{\VI}(\theta) = \dfrac{N}{M}\sum_{i\in \mathcal{S}} \esp_{q_\theta(\bomega)}\{\log p(\by_i|\fb^\bomega(\bx_i))\} - \KL\{q_\theta(\bomega)|| p(\bomega)\}
             \end{equation}
             
             \item Usar estimadores Monte Carlo.
@@ -158,7 +181,7 @@
 
 \subsection{Monte Carlo}
 
-\begin{frame}{Monte Carlo}
+\begin{frame}{Estimadores de Monte Carlo}
 
     \uncover<1->{
     \textbf{Objetivo:}
@@ -225,9 +248,9 @@
     \Huge ¡Gracias!
 \end{frame}
 
-\begin{frame}{Referencias}
-
-\end{frame}
+% \begin{frame}{Referencias}
+%     \printbibliography
+% \end{frame}
 
 \begin{frame}{Tercera diapo}
     AQUÍ HAY MÁS INFO
