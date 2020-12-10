@@ -6,9 +6,11 @@
 \usepackage{subfig}
 \usepackage{pifont}
 \usepackage{amsmath}
+\usepackage{bm}
+\usepackage{commath}
 \usepackage[backend=biber,style=numeric-comp,sorting=none]{biblatex}
-
-\DeclareMathOperator*{\argmin}{arg\,min}
+% \usepackage{biblatex}
+\addbibresource{xampl.bib}
 
 % Tema de la presentación
 \usetheme{Darmstadt}
@@ -23,6 +25,32 @@ Universidad de Chile
 \date{16 de diciembre de 2020}
 % \logo{\includegraphics[height=1.7cm]{presentaciones/img/logo solo ingenieria.jpg}}
 
+%%%%%%% MACROS
+% Letras en negrita
+\newcommand{\bX}{{\bm{X}}}
+\newcommand{\bY}{{\bm{Y}}}
+\newcommand{\bW}{{\bm{W}}}
+\newcommand{\bx}{{\bm{x}}}
+\newcommand{\by}{{\bm{y}}}
+\newcommand{\bb}{{\bm{b}}}
+\newcommand{\bomega}{{\bm{\omega}}}
+\newcommand{\fb}{{\bm{f}}}
+
+% Letras rectas
+\DeclareMathOperator{\ELBO}{ELBO}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\VI}{VI}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% Letras curvas
+\let \oldL=\L
+\renewcommand{\L}{\mathcal{L}}
+\newcommand{\N}{\mathcal{N}}
+
+% Letras bacanes
+\newcommand{\esp}{\mathbb{E}}
+
+\bibliography{../xampl}
 % Inicio del documento
 \begin{document}
 % Portada
@@ -32,6 +60,7 @@ Universidad de Chile
 \AtBeginSection[]
 {
 \begin{frame}
+    \nocite{*}
     \frametitle{Tabla de Contenidos}
     \tableofcontents[currentsection]
 \end{frame}
@@ -39,5 +68,11 @@ Universidad de Chile
 % Resto de las diapos
 \input{presentaciones/contenido01}
 
+\begin{frame}[allowframebreaks]
+    \frametitle{Referencias}
+    \printbibliography
+    % \bibliographystyle{amsalpha}
+    % \bibliography{../xampl}
+\end{frame}
 
 \end{document}
