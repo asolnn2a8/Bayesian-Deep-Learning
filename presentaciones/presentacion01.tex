@@ -8,6 +8,7 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{commath}
+\usepackage{mathtools}
 \usepackage[backend=biber,style=numeric-comp,sorting=none]{biblatex}
 % \usepackage{biblatex}
 \addbibresource{xampl.bib}
@@ -28,18 +29,21 @@ Universidad de Chile
 %%%%%%% MACROS
 % Letras en negrita
 \newcommand{\bX}{{\bm{X}}}
-\newcommand{\bY}{{\bm{Y}}}
-\newcommand{\bW}{{\bm{W}}}
 \newcommand{\bx}{{\bm{x}}}
+\newcommand{\bY}{{\bm{Y}}}
 \newcommand{\by}{{\bm{y}}}
+\newcommand{\bW}{{\bm{W}}}
+\newcommand{\bw}{{\bm{w}}}
 \newcommand{\bb}{{\bm{b}}}
 \newcommand{\bomega}{{\bm{\omega}}}
+\newcommand{\bepsilon}{{\bm{\epsilon}}}
 \newcommand{\fb}{{\bm{f}}}
 
 % Letras rectas
 \DeclareMathOperator{\ELBO}{ELBO}
 \DeclareMathOperator{\KL}{KL}
 \DeclareMathOperator{\VI}{VI}
+\DeclareMathOperator{\MC}{MC}
 \DeclareMathOperator*{\argmin}{arg\,min}
 
 % Letras curvas
